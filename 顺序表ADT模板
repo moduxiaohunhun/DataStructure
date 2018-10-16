@@ -1,0 +1,250 @@
+#include<iostream>
+#include <string>
+#include <cstring>
+using namespace std;
+template <class numtype>
+class sqlist
+{
+private:
+    numtype *elem;
+    int length;
+    int listsize;
+public:
+    //初始化顺序表
+    sqlist(int ms = 30)
+    {
+        elem = new numtype[ms];
+        length = 0;
+        listsize = ms;
+    }
+    //删除顺序表
+    ~sqlist()
+    {
+        // cout<<"be destoryed"<<endl;
+        ListDestroy();
+    }
+    //将顺序表置为空表
+    void ListClear()
+    {
+        length = 0;
+    }
+    //返回顺序表的长度
+    int Listlength() const
+    {
+        return length;
+    }
+    //设置顺序表的长度
+    bool SetListLength(int len)
+    {
+        if (len < 0) return false;
+        else
+        {
+            length = len;
+            return true;
+        }
+    }
+    //判断顺序表是否为空表
+    bool ListEmpty() const
+    {
+        if (length == 0) return true;
+        else return false;
+    }
+    //判断顺序表是否为满表
+    bool ListFull() const
+    {
+        if (length == listsize && listsize != 0) return true;
+        else
+        {
+            return false;
+        }
+    }
+    //用e返回顺序表的第i个元素
+    numtype GetElem(int i) const
+    {
+        return elem[i-1];
+    }
+    //用e设置顺序表的第i个元素
+    bool SetElem(int i, numtype e)
+    {
+        if(i<=0||i>listsize)
+        {
+            return false;
+        }
+        else
+        {
+            elem[i-1]=e;
+            length++;
+            return true;
+        }
+    }
+    //在顺序表的第pos个位置之前插入e元素
+    bool ListInsert(int pos, numtype e)
+    {
+        if(pos<=0||pos>length)
+            return false;
+        else
+        {
+            length++;
+            for (int i = length-1; i > pos-1; i--)
+            {
+                elem[i] = elem[i - 1];
+            }
+            elem[pos - 1] = e;
+        }
+
+    }
+    //删除顺序表的第pos个位置的元素
+    bool ListDelete(int pos)
+    {
+        if (pos <=length)
+        {
+            for (int i = pos - 1; i < length - 1; i++)
+            {
+                elem[i] = elem[i + 1];
+            }
+            length--;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    //compare函数，用来判断a和b是否相等
+    bool compare(numtype a, numtype b)
+    {
+        if (a == b) return true;
+        else
+        {
+            return false;
+        }
+    }
+    //按指定条件查找
+    int LocateElem(numtype e)
+    {
+        bool flag = true;
+        for (int i = 0; i < length&&flag; i++)
+        {
+            if (elem[i] == e) return i;
+        }
+        if (!flag)
+        {
+            return -1;
+        }
+    }
+    //逆置顺序表
+    void Invert(int first, int second)
+    {
+        for (int i = 0; i < (first + second) / 2; i++)
+        {
+            numtype temp;
+            temp = elem[i];
+            elem[i] = elem[first + second - i - 1];
+            elem[first + second - i - 1] = temp;
+        }
+        for (int i = 0; i < first/2; i++)
+        {
+            numtype temp;
+            temp = elem[i];
+            elem[i] = elem[first - i - 1];
+            elem[first - i - 1] = temp;
+        }
+        for (int i = first; i < (first + second + first) / 2; i++)
+        {
+            numtype temp;
+            temp = elem[i];
+            elem[i] = elem[first+second + first - i - 1];
+            elem[first + second+first - i - 1] = temp;
+        }
+    }
+    //返回线性表给定数据元素的前驱数据元素的值
+    bool PriorElem(numtype cur_e, numtype &pri_e)
+    {
+        bool flag = true;
+        for (int i = 1; i < length; i++)
+        {
+            if (elem[i] == cur_e)
+            {
+                pri_e = elem[i - 1];
+                return flag;
+            }
+        }
+        return false;
+    }
+    //返回线性表给定数据元素的后继数据元素的值
+    bool NextElem(numtype cur_e, numtype &nex_e)
+    {
+        bool flag = true;
+        for (int i = 0; i < length - 1; i++)
+        {
+            if (elem[i] == cur_e)
+            {
+                nex_e = elem[i + 1];
+                return flag;
+            }
+        }
+        return false;
+    }
+    //销毁线性表
+    void ListDestroy()
+    {
+        if(listsize)
+        {
+            length = 0;
+            listsize = 0;
+            delete[] elem;
+            elem = NULL;
+        }
+        /*else
+            cout<<"have done"<<endl;*/
+
+    }
+    //遍历顺序表
+    int ListTraverse() const
+    {
+        for(int i=0; i<length; i++)
+            cout<<elem[i]<<" ";
+        cout<<endl;
+        return length;
+    }
+};
+template<class ElemType>
+
+void Intersect_Sq_OL_C( const sqlist<ElemType> &A, const sqlist<ElemType> &B, sqlist<ElemType> &C )
+{
+    int k=0;
+   for(int i=0;i<A.Listlength();i++)
+   {
+       for(int j=0;j<B.Listlength();j++)
+       {
+           if(A.GetElem(i+1)==B.GetElem(j+1))
+           {
+               C.SetElem(k+1,A.GetElem(i+1));
+               k++;
+           }
+       }
+   }
+}
+
+int main()
+{
+   int num1,num2,yuan;
+   cin>>num1;
+   sqlist <int> test1,test2,test3;
+   for(int i=0;i<num1;i++)
+   {
+       cin>>yuan;
+       test1.SetElem(i+1,yuan);
+   }
+   cin>>num2;
+   for(int i=0;i<num2;i++)
+   {
+       cin>>yuan;
+       test2.SetElem(i+1,yuan);
+   }
+   test1.ListTraverse();
+   test2.ListTraverse();
+   Intersect_Sq_OL_C(test1,test2,test3);
+   test3.ListTraverse();
+   return 0;
+}
