@@ -1,0 +1,490 @@
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <cstring>
+using namespace std;
+template<class ElemType>
+struct LinkNode
+{
+	ElemType data;
+	LinkNode<ElemType> *next;
+	LinkNode(LinkNode<ElemType> *ptr = NULL)
+	{
+		next = ptr;
+	} //构造函数1，用于构造头结点
+	LinkNode(const ElemType &item, LinkNode<ElemType> *ptr = NULL) //构造函数2，用于构造其他结点
+	//函数参数表中的形参允许有默认值，但是带默认值的参数需要放后面
+	{
+		next = ptr;
+		data = item;
+	}
+	ElemType getData()
+	{
+		return data;
+	}  //取得结点中的数据
+	void SetLink(LinkNode<ElemType> *link)
+	{
+		next = link;
+	}  //修改结点的next域
+	void SetLink(ElemType value)
+	{
+		data = value;
+	}   //修改结点的next域
+};
+template <class numtype>
+class Linklist
+{
+private:
+	LinkNode <numtype> *head;
+	LinkNode <numtype> *tail;
+public:
+	//无参数的构造函数
+	Linklist()
+	{
+		head = new LinkNode<numtype>;
+		tail = head;
+	}
+	//带参数的构造函数
+	Linklist(const numtype &item)
+	{
+		head = new LinkNode<numtype>;
+		head->next = tail = new LinkNode <numtype>(item);
+	}
+	//获取链表头结点
+	LinkNode<numtype>* GetHead()
+	{
+		return head;
+	}
+	//设置链表头结点
+	void SetHead(LinkNode<numtype> *p)
+	{
+		head = p;
+	}
+	//设置链表尾结点
+	void SetTail(LinkNode <numtype> *p)
+	{
+		tail = p;
+	}
+	//获取链表尾结点
+	LinkNode<numtype>* GetTail()
+	{
+		return tail;
+	}
+	//拷贝构造函数
+	Linklist(Linklist <numtype> &List)
+	{
+		LinkNode <numtype> *p1 = List.GetHead()->next;
+		head = new LinkNode<numtype>;
+		LinkNode <numtype> *p2 = head;
+		while (p1)
+		{
+			LinkNode <numtype> *p3 = new LinkNode<numtype>;
+			p3->data = p1->data;
+			p2->next = p3;
+			p3->next = NULL;
+			p1 = p1->next;
+			p2 = p2->next;
+		}
+		tail = p2;
+	}
+	//析构函数
+	~Linklist()
+	{
+		ListDestroy();
+	}
+	/*//重载函数:赋值
+	Linklist <ElemType>& operator=(Linklist<ElemType> &List)
+	{
+
+	}*/
+	//销毁链表
+	void ListDestroy()
+	{
+		LinkNode <numtype> *p;
+		while (head)
+		{
+			p = head;
+			head = head->next;
+			delete p;
+		}
+		head = NULL;
+	}
+	//清空链表
+	void ListClear()
+	{
+		while (head->next)
+		{
+			LinkNode <numtype> *p;
+			p = head->next;
+			head->next = p->next;
+			delete p;
+		}
+		head->next = NULL;
+	}
+	//返回链表的长度
+	int ListLength() const
+	{
+		LinkNode <numtype> *p;
+		p = head;
+		int length = 0;
+		while (p)
+		{
+			length++;
+			p = p->next;
+		}
+		return length - 1;
+	}
+	//判断链表是否为空表
+	bool ListEmpty() const
+	{
+		if (ListLength() == 0) return true;
+		else return false;
+	}
+	//在首节点之前插入一个结点
+	bool InsFirst(numtype e)
+	{
+		LinkNode <numtype> *p1=new LinkNode <numtype>;
+		p1->data = e;
+		p1->next = head->next;
+		head->next = p1;
+		return true;
+	}
+
+	//用e返回链表的第i个元素
+	numtype GetElem(int pos)
+	{
+		int i = 1;
+		LinkNode <numtype> *p1;
+		p1 = head->next;
+		while (p1)
+		{
+			if (i == pos)
+			{
+				return (p1->data);
+				break;
+			}
+			else
+				p1 = p1->next;
+			i++;
+		}
+	}
+	//在链表的第pos个位置之前插入e元素
+	bool ListInsert_prior(int pos, numtype e)
+	{
+		if (pos<1 && pos>ListLength())
+		{
+			return false;
+		}
+		else
+		{
+			int i = 0;
+			LinkNode <numtype> *p1 = new LinkNode <numtype>;
+			LinkNode <numtype> *p2;
+			p1->data = e;
+			p2 = head;
+			for (int i = 0; i < pos - 1; i++)
+			{
+				p2 = p2->next;
+			}
+			p1->next = p2->next;
+			p2->next = p1;
+			return true;
+		}
+	}
+	//在链表的第pos个位置之后插入e元素
+	bool ListInsert_next(int pos, numtype e)
+	{
+		if (pos < 1 || ListLength() == 0)
+			return false;
+		else
+		{
+			LinkNode <numtype> *p1 = new LinkNode <numtype>;
+			LinkNode <numtype>  *p2;
+			p1->data = e;
+			p2 = head;
+			for (int i = 0; i < pos; i++)
+			{
+				p2 = p2->next;
+			}
+			p1->next = p2->next;
+			p2->next = p1;
+			return true;
+		}
+	}
+	//删除链表的首结点
+	bool DelFirst()
+	{
+		if (ListLength() == 0)
+		{
+			return false;
+		}
+		else
+		{
+			LinkNode <numtype> *p1;
+			p1 = head->next->next;
+			delete head->next;
+			head->next = p1;
+		}
+	}
+	//表头插入法动态生成链表
+	void CreateList_Head(int n, numtype *A)
+	{
+		LinkNode <numtype> *p1 = new LinkNode <numtype>;
+		p1->data = A[0];
+		head->next = p1;
+		p1->next = NULL;
+		tail = p1;
+		for (int i = 1; i < n; i++)
+		{
+			LinkNode <numtype> *p2 = new LinkNode <numtype>;
+			p2->data = A[i];
+			p2->next = head->next;
+			head->next = p2;
+
+		}
+	}
+	//表尾插入法动态生成链表
+	void CreateList_Tail(int n, numtype *A)
+	{
+		LinkNode <numtype> *p1 = new LinkNode <numtype>;
+		p1->data = A[0];
+		head->next = p1;
+		p1->next = NULL;
+		for (int i = 1; i < n; i++)
+		{
+			LinkNode <numtype> *p2 = new LinkNode <numtype>;
+			p2->data = A[i];
+			p1->next = p2;
+			p2->next = NULL;
+			p1 = p1->next;
+		}
+		p1->next = NULL;
+		tail = p1;
+	}
+	//删除链表的第pos个位置的元素
+	numtype ListDelete(int pos)
+	{
+		LinkNode <numtype> *p1;
+		LinkNode <numtype> *p2;
+		numtype number;
+		p1 = head->next;
+		p2 = head;
+		for (int i = 1; i <= pos; i++)
+		{
+			if (i == pos)
+			{
+				p2->next = p1->next;
+				number = p1->data;
+				if (pos == ListLength())
+				{
+					tail = p2;
+				}
+				delete p1;
+			}
+			else
+			{
+				p1 = p1->next;
+				p2 = p2->next;
+			}
+		}
+		return number;
+
+	}
+	//compare函数，用来判断a和b是否相等
+	bool compare(numtype a, numtype b)
+	{
+		if (a == b)
+			return true;
+		else
+			return false;
+	}
+	//按序号查找，从链表的第一个结点开始，判断当前结点是否是第i个，
+	//若是，则返回该结点的数据域的值；否则继续后一个，直至表结束。没有第i个结点时返回空。
+	bool FindElem(int k, numtype &e)
+	{
+		if (k > ListLength()||k<0) return false;
+		else
+		{
+			LinkNode <numtype> *p1 = head->next;
+			for (int i = 1; i <= k; i++)
+			{
+				if (i == k) e = p1->data;
+				else
+					p1 = p1->next;
+			}
+			return true;
+		}
+	}
+	//返回链表给定数据元素的前驱数据元素的值
+	bool PriorElem(numtype cur_e, numtype &pri_e)
+	{
+		LinkNode <numtype> *p1 = head->next;
+		LinkNode <numtype> *p2 = head;
+		if (p1->data == cur_e) return false;
+		else
+		{
+			while (p1)
+			{
+				if (p1->data == cur_e)
+				{
+					pri_e = p2->data;
+					break;
+				}
+				else
+				{
+					p1 = p1->next;
+					p2 = p2->next;
+				}
+			}
+		}
+	}
+	//返回链表给定数据元素的后继数据元素的值
+	bool NextElem(numtype cur_e, numtype &net_e)
+	{
+		LinkNode <numtype> *p1 = head->next;
+		//LinkNode <numtype> *p2 = head;
+		if (tail->data == cur_e) return false;
+		else
+		{
+			while (p1)
+			{
+				if (p1->data == cur_e)
+				{
+					net_e = p1->next->data;
+					break;
+				}
+				else
+				{
+					p1 = p1->next;
+				}
+			}
+		}
+	}
+	//遍历链表
+	bool ListTraverse() const
+	{
+		LinkNode <numtype> *p1 = head->next;
+		while (p1)
+		{
+			cout << p1->data << " ";
+			p1 = p1->next;
+		}
+		cout << endl;
+		return true;
+	}
+};
+template <class numtype>
+void Exchange_L(Linklist<numtype> &L,int m)
+{
+	LinkNode <numtype> *p = L.GetHead()->next;
+	Linklist <numtype> templist;
+	for (int i = 1; i <= m; i++)
+	{
+		if (i == m )
+		{
+			templist.GetHead()->next= p->next;
+			templist.SetTail(L.GetTail());
+			p->next = NULL;
+			L.SetTail(p);
+		}
+		else
+		{
+			p = p->next;
+		}
+	}
+	templist.GetTail()->next = L.GetHead()->next;
+	L.GetHead()->next = templist.GetHead()->next;
+	templist.GetHead()->next = NULL;
+}
+template <class numtype>
+void Linklist_Contact(Linklist <numtype> &A, Linklist <numtype> &B)
+{
+	A.GetTail()->next = B.GetHead()->next;
+	B.GetHead()->next = NULL;
+}
+template <class numtype>
+void Merge_L(Linklist <numtype> &A, Linklist <numtype> &B)
+{
+	LinkNode <numtype> *p1 = A.GetHead()->next;
+	LinkNode <numtype> *p2 = B.GetHead()->next;
+	while (p2)
+	{
+		LinkNode <numtype> *p3 = new LinkNode<numtype>;
+		p3->data = p2->data;
+		p2 = p2->next;
+		p3->next = p1->next;
+		p1->next = p3;
+		p1 = p1->next->next;
+	}
+}
+template <class numtype>
+void Merge_L_Order(Linklist <numtype> &A, Linklist <numtype> &B)
+{
+	LinkNode <numtype> *p2 = B.GetHead()->next;
+	if (A.GetHead()->next->data >= B.GetHead()->next->data)
+	{
+		LinkNode <numtype> *p3 = p2;
+		p2 = p2->next;
+		B.GetHead()->next = p2;
+		p3->next = A.GetHead()->next;
+		A.GetHead()->next = p3;
+	}
+	LinkNode <numtype> *p1 = A.GetHead()->next;
+	while (p2&&p1)
+	{
+		if (p1->next)
+		{
+			if (p1->next->data>= p2->data)
+			{
+				LinkNode <numtype> *p4 = p2;
+				p2 = p2->next;
+				B.GetHead()->next = p2;
+				p4->next = p1->next;
+				p1->next = p4;
+			}
+		}
+		p1 = p1->next;
+	}
+}
+template <class numtype>
+void Purge_Lk_OL(Linklist <numtype> &A)
+{
+	LinkNode <numtype> *p1 = A.GetHead()->next;
+	while (p1->next)
+	{
+		if (p1->data == p1->next->data)
+		{
+			LinkNode <numtype> *p2 = p1->next;
+			p1->next = p2->next;
+			delete p2;
+		}
+		else
+		{
+			p1 = p1->next;
+		}
+	}
+}
+int main()
+{
+	int num1, num2;
+	int len1[100], len2[100];
+	cin >> num1;
+	for (int i = 0; i < num1; i++)
+	{
+		cin >> len1[i];
+	}
+	cin >> num2;
+	for (int i = 0; i < num2; i++)
+	{
+		cin >> len2[i];
+	}
+	Linklist <int> list1, list2;
+	list1.CreateList_Tail(num1, len1);
+	list2.CreateList_Tail(num2, len2);
+	list1.ListTraverse();
+	list2.ListTraverse();
+	Merge_L_Order(list1, list2);
+	Purge_Lk_OL(list1);
+	list1.ListTraverse();
+	return 0;
+}
