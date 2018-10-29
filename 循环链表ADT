@@ -1,0 +1,223 @@
+#include <iostream>
+#include <stdio.h>
+#include <string>
+#include <cstring>
+using namespace std;
+/* 循环单链表的结点定义 */
+template<class numtype>
+struct LinkNode
+{
+	numtype data;
+	LinkNode<numtype> *next;
+	LinkNode(LinkNode<numtype> *ptr = NULL) { next = ptr; } //构造函数1，用于构造头结点
+	LinkNode(const numtype &item, LinkNode<numtype> *ptr = NULL) //构造函数2，用于构造其他结点   
+	//函数参数表中的形参允许有默认值，但是带默认值的参数需要放后面
+	{
+		next = ptr;
+		data = item;
+	}
+	numtype getData() { return data; }   //取得结点的数据域的值 
+	void SetLink(LinkNode<numtype> *link) { next = link; }  //修改结点的next域 
+	void SetLink(numtype value) { data = value; }   //修改结点的next域
+};
+
+//带头结点的循环单链表 
+template<class numtype>
+class CirLinkList
+{
+private:
+	LinkNode<numtype> *head;   // 头结点
+	LinkNode<numtype> *tail;   // 尾结点
+public:
+	//无参数的构造函数
+	CirLinkList()
+	{
+		head = new LinkNode<numtype>; 
+		tail = head;
+		head->next = head;
+	}
+	//带参数的构造函数
+	CirLinkList(const numtype &item)
+	{ 
+		head = new LinkNode<numtype>(item);
+		tail = head; 
+		head->next = head; 
+	}
+	//获取循环链表头结点
+	LinkNode<numtype>* GetHead()
+	{ 
+		return head;
+	}
+	//获取循环链表尾结点
+	LinkNode<numtype>* GetTail() 
+	{
+		return tail;
+	}
+	//设置链表头结点
+	void SetHead(LinkNode<numtype> *p) 
+	{ 
+		head = p;
+	}
+	//拷贝构造函数
+	CirLinkList(CirLinkList<numtype> &List)
+	{
+		LinkNode <numtype> *p1 = List.GetHead()->next;
+		head = new LinkNode<numtype>;
+		LinkNode <numtype> *p2 = head;
+		while (p1->next!=List.GetHead())
+		{
+			LinkNode <numtype> *p3 = new LinkNode<numtype>;
+			p3->data = p1->data;
+			p2->next = p3;
+			p3->next = NULL;
+			p1 = p1->next;
+			p2 = p2->next;
+		}
+		p2->next = head;
+	}
+	//析构函数
+	~CirLinkList() 
+	{ 
+		ListDestroy();
+	}
+	//销毁链表
+	void ListDestroy()
+	{
+		LinkNode <numtype> *p;
+		while (head!=tail)
+		{
+			p = head;
+			head = head->next;
+			delete p;
+		}
+
+		head = NULL;
+	}
+	//清空链表
+	void ListClear()
+	{
+		while (head->next!=head)
+		{
+			LinkNode <numtype> *p;
+			p = head->next;
+			head->next = p->next;
+			delete p;
+		}
+		head->next = NULL;
+	}
+	//返回链表的长度
+	int ListLength() const
+	{
+		LinkNode <numtype> *p;
+		p = head;
+		int length = 0;
+		while (p->next!=head)
+		{
+			length++;
+			p = p->next;
+		}
+		return length;
+	}
+	//判断链表是否为空表
+	bool ListEmpty() const
+	{
+		if (ListLength() == 0) return true;
+		else
+		{
+			return false;
+		}
+	}
+	//在链表的第pos个位置之后插入e元素
+	bool ListInsert_next(int pos, numtype e)
+	{
+		if (pos < 1 || ListLength() == 0)
+			return false;
+		else
+		{
+			LinkNode <numtype> *p1 = new LinkNode <numtype>;
+			LinkNode <numtype>  *p2;
+			p1->data = e;
+			p2 = head;
+			for (int i = 0; i < pos; i++)
+			{
+				p2 = p2->next;
+			}
+			p1->next = p2->next;
+			p2->next = p1;
+			return true;
+		}
+	}
+	//表头插入法动态生成链表
+	void CreateList_Head(int n, numtype *A)
+	{
+		LinkNode <numtype> *p1 = new LinkNode <numtype>;
+		p1->data = A[0];
+		head->next = p1;
+		tail = p1;
+		tail->next = head;
+		for (int i = 1; i < n; i++)
+		{
+			LinkNode <numtype> *p2 = new LinkNode <numtype>;
+			p2->data = A[i];
+			p2->next = head->next;
+			head->next = p2;
+
+		}
+	}
+	//表尾插入法动态生成链表
+	void CreateList_Tail(int n, numtype *A)
+	{
+		LinkNode <numtype> *p1 = new LinkNode <numtype>;
+		p1->data = A[0];
+		head->next = p1;
+		p1->next = head;
+		for (int i = 1; i < n; i++)
+		{
+			LinkNode <numtype> *p2 = new LinkNode <numtype>;
+			p2->data = A[i];
+			p1->next = p2;
+			p2->next = NULL;
+			p1 = p1->next;
+		}
+		tail = p1;
+		p1->next = head;
+	}
+	//遍历链表
+	bool ListTraverse() const
+	{
+		LinkNode <numtype> *p1 = head->next;
+		while (p1!=head)
+		{
+			cout<< p1->data << " ";
+			p1 = p1->next;
+		}
+		cout << endl;
+		return true;
+	}
+};
+template<class numtype>
+void Merge_Cur_Linklist(CirLinkList<numtype> &A, CirLinkList<numtype> &B)
+{
+	//LinkNode <numtype> *p1 = B.GetHead();
+	A.GetTail()->next = B.GetHead()->next;
+	B.GetTail()->next = A.GetHead();
+}
+int main()
+{
+	CirLinkList <int> list1;
+	CirLinkList <int> list2;
+	int num1, num2;
+	int len1[100], len2[100];
+	cin >> num1;
+	for (int i = 0; i < num1; i++)
+		cin >> len1[i];
+	cin >> num2;
+	for (int i = 0; i < num2; i++)
+		cin >> len2[i];
+	list1.CreateList_Tail(num1, len1);
+	list2.CreateList_Tail(num2, len2);
+	list1.ListTraverse();
+	list2.ListTraverse();
+	Merge_Cur_Linklist(list1, list2);
+	list1.ListTraverse();
+}
