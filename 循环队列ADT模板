@@ -1,0 +1,147 @@
+#include <cstdio>
+#include <string>
+#include <cstring>
+#include <algorithm>
+#include <iostream>
+using namespace std;
+const int MAXLISTSIZE = 100;
+template<class numtype>
+class SqQueue {
+private:
+	numtype *elem;   // 存储空间基址 
+	int front;   // 队头指针 
+	int rear;   // 队尾指针 
+	int maxSize;        // 允许的最大存储容量(以sizeof(ElemType)为单位
+public:
+	//初始化顺序队列
+	SqQueue(int ms = 20)
+	{
+		elem = new numtype[ms];
+		maxSize = ms ;
+		front = rear = 0;
+	}
+	//删除顺序队列
+	~SqQueue(){ QueueDestroy(); }
+	//将顺序队列置为空
+	bool QueueClear()
+	{
+		front = rear = 0;
+		return true;
+	}
+	//设置顺序栈的长度
+	//bool SetListLength(int len);
+	//判断顺序队列是否为空
+	bool QueueisEmpty() const { return front == rear; }
+	//判断顺序队列是否为满 
+	bool QueueFull() const
+	{
+		if ((rear + 1) % maxSize == front)
+			return true;
+		else
+		{
+			return false;
+		}
+	}
+	//用e返回队头元素
+	bool GetFront(numtype &e)
+	{
+		if (QueueisEmpty())
+			return false;
+		else
+		{
+			e = elem[front];
+			return true;
+		}
+	}
+	//入队 
+	bool enQueue(const numtype &e)
+	{
+		if (QueueFull())
+			return false;
+		else
+		{
+			elem[rear] = e;
+			rear = (rear + 1) % maxSize;
+			return true;
+		}
+	}
+	//出队
+	bool deQueue(numtype &e)
+	{
+		if (QueueisEmpty())
+			return false;
+		else
+		{
+			e = elem[front];
+			front = (front + 1) % maxSize;
+			return true;
+		}
+	}
+	//销毁顺序队列 
+	bool QueueDestroy()
+	{
+		delete[] elem;
+		front = rear = maxSize = 0;
+		return true;
+	}
+	//顺序队列最大存储空间加倍 
+	bool DoubleSpace();
+};
+template<class numtype>
+void YangHuiTriangle(SqQueue<numtype> &Q, int N)
+{
+	int number, prenumber;
+	Q.enQueue(0);
+	Q.enQueue(1);
+
+	for (int k= 1; k <= N; k++)
+	{
+		Q.enQueue(0);
+		for (int i = 1; i <= k + 1; i++)
+		{
+			Q.deQueue(prenumber);
+			Q.GetFront(number);
+			prenumber += number;
+			Q.enQueue(prenumber);
+			cout << prenumber ;
+			if (i != k + 1)
+				cout << " ";
+		}
+		cout << endl;
+	}
+}
+template<class numtype>
+void decode(SqQueue<numtype> &S, string &code)
+{
+	int k = 0;
+	char temp;
+	for (int i = 0; i < code.length(); i++)
+	{
+		if (code[i] != ' ')
+		{
+			S.enQueue(code[i]);
+		}
+	}
+	while (!S.QueueisEmpty())
+	{
+		k++;
+		S.deQueue(temp);
+		if (k %2!=0)
+		{
+			cout << temp;
+		}
+		else
+		{
+			S.enQueue(temp);
+		}
+	}
+	cout << endl;
+}
+int main()
+{
+	SqQueue <char> s1;
+	string str;
+	getline(cin, str);
+	decode(s1, str);
+	return 0;
+}
