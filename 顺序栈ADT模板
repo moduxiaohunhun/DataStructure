@@ -21,7 +21,7 @@ public:
 		top = base;
 	}
 	//删除顺序栈
-	~SqStack() 
+	~SqStack()
 	{
 		StackDestroy();
 	}
@@ -36,8 +36,8 @@ public:
 		}
 	}
 	//返回顺序栈的长度
-	int StackLength() const 
-	{ 
+	int StackLength() const
+	{
 		return top - base;
 	}
 	//设置顺序栈的长度
@@ -51,8 +51,8 @@ public:
 		return true;
 	}
 	//判断顺序栈是否为空栈
-	bool StackisEmpty() const 
-	{ 
+	bool StackisEmpty() const
+	{
 		return top == base;
 	}
 	//判断顺序栈是否为满栈 
@@ -109,8 +109,8 @@ public:
 	//遍历顺序栈
 	void StackTraverse() const
 	{
-		numtype *p = top-1;
-		while (p-base>=0)
+		numtype *p = top - 1;
+		while (p - base >= 0)
 		{
 			cout << *p << " ";
 			p--;
@@ -133,20 +133,20 @@ public:
 template<class numtype>
 void Conversion(SqStack<numtype> &S, int data, int format)
 {
-		char temp;
-		while (data)
+	char temp;
+	while (data)
+	{
+		if (data%format < 10)
 		{
-			if (data%format < 10)
-			{
-				temp = '0' + data % format;
-			}
-			else
-			{
-				temp = 'A' + data % format-10;
-			}
-			S.push(temp);
-			data /= format;
+			temp = '0' + data % format;
 		}
+		else
+		{
+			temp = 'A' + data % format - 10;
+		}
+		S.push(temp);
+		data /= format;
+	}
 }
 template<class numtype>
 bool Matching(SqStack<numtype> &S)
@@ -201,7 +201,7 @@ bool parlindrome_judge(SqStack<numtype> &S)
 		S.pop(str1[i]);
 		i++;
 	}
-	for (int j = 0; j <i; j++)
+	for (int j = 0; j < i; j++)
 		S.push(str1[j]);
 	int k = 0;
 	while (!S.StackisEmpty())
@@ -225,6 +225,7 @@ int MaxValue(int Value[], int n)
 	}
 	return temp;
 }
+bool isoperator(char op)
 {
 	if (op == '+' || op == '-' || op == '*' || op == '/' || op == '(' || op == ')')
 		return true;
@@ -233,29 +234,46 @@ int MaxValue(int Value[], int n)
 		return false;
 	}
 }
-/*bool cmpopreator(char chout, char chin)
+bool cmpopreator(char chout, char chin)
 {
-	if (chout == '(' || chout == '*' || chout == '/' || chout == chin)
+	if (chout == '(')
 		return true;
-	else
-		return false;
+	if (chout == '*' || chout == '/')
+	{
+		if (chin == '+' || chin == '-'||chin=='(')
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	if (chout == '+' || chout == '-')
+	{
+		if (chin == '(')
+			return true;
+		else
+		{
+			return false;
+		}
+	}
 }
 template<class numtype>
 void infix_to_suffix(SqStack<numtype> &S, string &infix, string &suffix)
 {
-	for (int i = 0,j=0; i < infix.length(); )
+	char temp, temp2, ch;
+	for (int i = 0; i < infix.length();)
 	{
-		char temp, ch;
-		if (!isoperator)
+		
+		if (isoperator(infix[i]) == false)
 		{
-			suffix[j] = infix[i];
+			suffix += infix[i];
 			i++;
-			j++;
 		}
 		else
 		{
-			temp = S.GetTop(temp);
-			if (cmpopreator(infix[i], temp))
+			if (S.StackisEmpty())
 			{
 				ch = infix[i];
 				S.push(ch);
@@ -263,69 +281,53 @@ void infix_to_suffix(SqStack<numtype> &S, string &infix, string &suffix)
 			}
 			else
 			{
-				char temp2;
-				S.pop(temp2);
-				if (infix[i] == ')')
+				S.GetTop(temp);
+				if (cmpopreator(infix[i], temp) == true)
 				{
-					while (temp2!='(')
-					{
-						suffix[j] = temp2;
-						j++;
-						S.pop(temp2);
-					}
-					if(temp2=='(')
-					{
-						i++;
-					}
+					ch = infix[i];
+					S.push(ch);
+					i++;
 				}
 				else
 				{
-					suffix[j] = temp2;
-					j++;
+					//char temp2;
+					S.pop(temp2);
+					if (infix[i] == ')')
+					{
+						while (temp2 != '(')
+						{
+							suffix += temp2;
+							suffix += ' ';
+							if (S.StackisEmpty())
+								break;
+							S.pop(temp2);
+						}
+						i++;
+					}
+					else
+					{
+						suffix += ' ';
+						suffix += temp2;
+					}
 				}
 			}
-		}
-	}
-}*/
-template<class numtype>
-string Conversion(SqStack<numtype> &S, string &train)
-{
-	for (int i = 0; i < k; i++)
-	{
-		if (train[i][0] == 'S')
-			S.push(train[i]);
-		else
-		{
-			cout << train[i] << " ";
+
 		}
 	}
 	while (!S.StackisEmpty())
 	{
-		string tempstr;
-		S.pop(tempstr);
-		cout << tempstr << " ";
+		S.pop(temp); 
+		suffix += ' ';
+		suffix += temp;
 	}
-	cout << endl;
 }
 
 int main()
 {
-	/*SqStack <char> sfirst;
+	SqStack <char> sfirst;
 	string strmiddle, strlater;
 	getline(cin, strmiddle);
-	infix_to_suffix(sfirst, strmiddle, strlater);*/
-	SqStack <string> sfirst;
-	string str[100];
-	while (true)
-	{
-		cin >> str[k];
-		if (str[k][0] == '\0')
-			break;
-		else
-		{
-			k++;
-		}
-	}
-	Conversion(sfirst, str[k-1]);
+	infix_to_suffix(sfirst, strmiddle, strlater);
+	cout << strlater << endl;
 	return 0;
 }
