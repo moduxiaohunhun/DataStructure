@@ -1,0 +1,222 @@
+#include <cstdio>
+#include <string>
+#include <cstring>
+#include <algorithm>
+#include <iostream>
+using namespace std;
+/* 链队列的结点定义 */
+template<class numtype>
+struct LinkQueueNode
+{
+	numtype data;
+	LinkQueueNode<numtype> *next;
+	LinkQueueNode(LinkQueueNode<numtype> *ptr = NULL) { next = ptr; } //构造函数1，用于构造头结点
+	LinkQueueNode(const numtype &item, LinkQueueNode<numtype> *ptr = NULL) //构造函数2，用于构造其他结点   
+	//函数参数表中的形参允许有默认值，但是带默认值的参数需要放后面
+	{
+		next = ptr;
+		data = item;
+	}
+	numtype getData() { return data; }  //取得结点中的数据
+	void SetLink(LinkQueueNode<numtype> *link) { next = link; }  //修改结点的next域 
+	void SetData(numtype value) { data = value; }   //修改结点的data域
+};
+//带头结点的链队列 
+template<class numtype>
+class LinkQueue {
+private:
+	LinkQueueNode<numtype> *front;   // 队头指针
+	LinkQueueNode<numtype> *rear;   // 队尾指针
+	int length;   //队列当前元素个数 
+public:
+	//无参数的构造函数
+	LinkQueue()
+	{
+		front = rear = new LinkQueueNode <numtype>;
+		length = 0;
+	}
+	//析构函数
+	~LinkQueue() { LinkQueueDestroy(); }
+	//销毁链队列 
+	bool LinkQueueDestroy()
+	{
+		if (!front)
+			return false;
+		if (front == rear)
+		{
+			delete front;
+			front = rear = NULL;
+			return true;
+		}
+		while (front->next)
+		{
+			LinkQueueNode <numtype> *p = front->next;
+			front->next = p->next;
+			delete p;
+		}
+		delete front;
+		front = rear = NULL;
+		return true;
+	}
+	//清空链表
+	bool LinkQueueClear()
+	{
+		if (QueueisEmpty())
+			return true;
+		while (front->next)
+		{
+			LinkQueueNode <numtype> *p = front->next;
+			front->next = p->next;
+			delete p;
+		}
+		rear = front;
+		front->next = NULL;
+		return true;
+	}
+	//返回链队列的长度
+	int QueueLength() const { return length; }
+	//判断链队列是否为空队列
+	bool QueueisEmpty() const
+	{
+		if (front==rear||front->next==NULL)
+			return true;
+		else
+		{
+			return false;
+		}
+	}
+	//出队
+	bool deQueue(numtype &e)
+	{
+		if (QueueisEmpty())
+			return false;
+		else
+		{
+			LinkQueueNode <numtype> *p = front->next;
+			e = p->data;
+			if (rear == p)
+			{
+				rear = front;
+				p->next = NULL;
+			}
+				
+			front->next = p->next;
+			delete p;
+			length--;
+			return true;
+		}
+	}
+	//入队
+	bool enQueue(numtype e)
+	{
+		LinkQueueNode <numtype> *p = new LinkQueueNode <numtype>;
+		p->data = e;
+		p->next = NULL;
+		rear->next = p;
+		rear = p;
+		length++;
+		return true;
+	}
+	//获取链队列头结点指针 
+	LinkQueueNode<numtype>t()
+	{ return front; }
+	//获取队头元素
+	numtype GetFrontData() 
+	{
+		return front->next->data;
+	}
+	//获取链队列队尾指针
+	LinkQueueNode<numtype>* GetRear() { return rear; }
+	//遍历链队列 
+	bool QueueTraverse() const
+	{
+		
+		LinkQueueNode <numtype> *p = front->next;
+		while (p)
+		{
+			cout << p->data;
+			p = p->next;
+		}
+		cout << endl;
+		return true;
+	}
+};
+template<class numtype>
+void queuetraining(LinkQueue <numtype> &S, int T)
+{
+	int peoplenum;
+	int k = 0;
+	while (T--)
+	{
+		cin >> peoplenum;
+		numtype temp;
+		for (int i = 1; i <= peoplenum; i++)
+		{
+			S.enQueue(i);
+		}
+		while (S.QueueLength()>3)
+		{
+			int len = S.QueueLength();
+			int k = 0;
+			for (int i = 0; i < len; i++)
+			{
+				k++;
+				S.deQueue(temp);
+				if (k % 2 != 0)
+					S.enQueue(temp);
+			}
+			k = 0;
+			len = S.QueueLength();
+
+			if (len > 3)
+			{
+				for (int i = 0; i < len; i++)
+				{
+					k++;
+					S.deQueue(temp);
+					if (k % 3 != 0)
+						S.enQueue(temp);
+				}
+			}
+				
+		}
+		while (!S.QueueisEmpty())
+		{
+			
+			S.deQueue(temp);
+			cout << temp ;
+			if (S.QueueLength() >= 1)
+				cout << ",";
+		}
+		cout << endl;
+	}
+}
+template<class numtype>
+void monkey_king(LinkQueue<numtype> S, int n, int m)
+{
+	int k = 0;
+	int temp;
+	for (int i = 1; i <= n; i++)
+	{
+		S.enQueue(i);
+	}
+	while (S.QueueLength() > 1)
+	{
+		k++;
+		S.deQueue(temp);
+		if (k%m != 0)
+		{
+			S.enQueue(temp);
+		}
+	}
+	S.deQueue(temp);
+	cout << temp <<" ";
+}
+int main()
+{
+	LinkQueue <int> s1;
+	int numofmonkey,monkey;
+	cin >> numofmonkey >> monkey;
+	monkey_king(s1, numofmonkey, monkey);
+	return 0;
+}
