@@ -1,0 +1,628 @@
+#include <iostream>
+#include <cstdio>
+#include <string>
+#include <string.h>
+#include <algorithm>
+#include <queue>
+using namespace std;
+template <class TypeOfVer, class TypeOfEdge>
+class adjmatrix_graph {
+private:
+	int Vers;        //顶点数 
+	int Edges;       //边数 
+	TypeOfEdge **edge;  //存放邻接矩阵（TypeOfEdge表示顶点关系类型。对于无权图，用1或0，表示相邻否；对于带权图，则为权值类型） 
+	TypeOfVer *ver;     //存放结点值 
+	TypeOfEdge noEdge;  //邻接矩阵中的∞的表示值
+	string GraphKind;   //图的种类标志 
+
+	void DFS(int u,queue <TypeOfVer> &q,bool visited[])//DFS遍历（递归部分）
+	{
+		if (visited[u])
+			return;
+		q.push(ver[u]);
+		visited[u] = 1;
+		for (int i = 0; i < Vers; i++)
+		{
+			if (!visited[i] && edge[u][i] != noEdge)
+				DFS(i, q, visited);
+		}
+	}
+
+	
+
+public:
+	//构造函数构造一个只有结点没有边的图。4个参数的含义：图的类型、结点数、结点值和邻接矩阵中表示结点间没有边的标记（无权图：0，有权图：输入参数定） 
+	adjmatrix_graph(const string &kd, int vSize, const TypeOfVer d[], const TypeOfEdge noEdgeFlag)
+	{
+		GraphKind = kd;
+		Vers = vSize;
+		Edges = -1;
+		ver = new TypeOfVer[vSize];
+		memcpy(ver, d, vSize * sizeof(TypeOfVer));
+		noEdge = noEdgeFlag;
+		edge = new TypeOfEdge*[vSize];
+		for (int i = 0; i < vSize; i++)
+		{
+			edge[i] = new TypeOfEdge[vSize];
+			fill(edge[i], edge[i] + vSize, noEdgeFlag);
+		}
+	}
+
+	//构造函数构造一个无权图。5个参数的含义：图的类型、结点数、边数、结点集和边集 
+	adjmatrix_graph(const string &kd, int vSize, int eSize, const TypeOfVer d[], int e[][2])
+	{
+		GraphKind = kd;
+		Vers = vSize;
+		Edges = eSize;
+		noEdge = 0;
+		ver = new TypeOfVer[vSize];
+		memcpy(ver, d, vSize * sizeof(TypeOfVer));
+		edge = new TypeOfEdge*[vSize];
+		for (int i = 0; i < vSize; i++)
+		{
+			edge[i] = new TypeOfEdge[vSize];
+			fill(edge[i], edge[i] + vSize, noEdge);
+		}
+		for (int i = 0; i < eSize; i++)
+		{
+			edge[e[i][0]][e[i][1]] = 1;
+			if (GraphKind == "UDN" || GraphKind == "UDG")
+				edge[e[i][1]][e[i][0]] = 1;
+		}
+		
+	}
+
+	//构造函数构造一个有权图。7个参数的含义：图的类型、结点数、边数、无边标记、结点集、边集、权集
+	adjmatrix_graph(const string &kd, int vSize, int eSize, const TypeOfEdge noEdgeFlag, const TypeOfVer d[], int e[][2], const TypeOfEdge w[]) 
+	{
+		GraphKind = kd;
+		Vers = vSize;
+		Edges = eSize;
+		noEdge = noEdgeFlag;
+		ver = new TypeOfVer[vSize];
+		memcpy(ver, d, vSize * sizeof(TypeOfVer));
+		edge = new TypeOfEdge*[vSize];
+		for (int i = 0; i < vSize; i++)
+		{
+			edge[i] = new TypeOfEdge[vSize];
+			fill(edge[i], edge[i] + vSize, noEdge);
+		}
+		for (int i = 0; i < eSize; i++)
+		{
+			edge[e[i][0]][e[i][1]] = w[i];
+			if (GraphKind == "UDN" || GraphKind == "UDG")
+			{
+				edge[e[i][1]][e[i][0]] = w[i];
+			}
+		}
+	}
+	
+	//判断图空否
+	bool GraphisEmpty() { return Vers == 0; }  
+
+	string GetGraphKind() { return GraphKind; }
+	
+	//取得G中指定顶点的值 
+	bool GetVer(int u, TypeOfVer &data)
+	{
+		if (u<0 || u>Vers)
+			return false;
+		else
+		{
+			data = ver[u];
+			return true;
+		}
+	}
+
+	//返回G中指定顶点u的第一个邻接顶点的位序（顶点集）。若顶点在G中没有邻接顶点，则返回-1
+	int GetFirstAdjVex(int u, int &v) 
+	{
+		if (u<0 || u>Vers)
+			return -1;
+		for (int i = 0; i < Vers; i++)
+		{
+			if (edge[u][i])
+			{
+				v = i;
+				return 0;
+			}
+		}
+		return -1;
+	}
+	
+	//返回G中指定顶点u的下一个邻接顶点（相对于v）的位序（顶点集）。若顶点在G中没有邻接顶点，则返回-1
+	int GetNextAdjVex(int u, int v, int &w) 
+	{
+		if (u<0 || u>Vers)
+			return -1;
+		for (int i = v + 1; i < Vers; i++)
+		{
+			if (edge[u][i])
+			{
+				w = i;
+				return w;
+			}
+		}
+		return -1;
+	}
+	
+	
+	//对G中指定顶点赋值
+	bool PutVer(int u, TypeOfVer data)  
+	{
+		if (u<0 || u>Vers)
+			return false;
+		else
+		{
+			ver[u] = data;
+			return true;
+		}
+	}
+	
+	//往G中添加一个顶点 
+	bool InsertVer(const TypeOfVer &data)
+	{
+		TypeOfVer *oldver = ver;
+		TypeOfEdge **oldedge = edge;
+		edge = new TypeOfEdge*[Vers + 1];
+		for (int i = 0; i < Vers + 1; i++)
+		{
+			edge[i] = new TypeOfEdge[Vers + 1];
+			edge[i][Vers] = noEdge;
+			if (i < Vers)
+				memcpy(edge[i], oldedge[i], Vers * sizeof(TypeOfEdge));
+		}
+		ver = new TypeOfVer[Vers + 1];
+		memcpy(ver, oldver, Vers * sizeof(TypeOfVer));
+		ver[Vers] = data;
+		Vers++;
+		for (int i = 0; i < Vers; i++)
+		{
+			edge[Vers - 1][i] = noEdge;
+		}
+		return true;
+	}
+
+	int LocateVer(TypeOfVer data) //返回G中指定顶点的位置 
+	{
+		for (int i = 0; i < Vers; i++)
+		{
+			if (ver[i] == data)
+				return i;
+		}
+		return -1;
+	}
+
+	//输出邻接矩阵 
+	bool PrintMatrix()
+	{
+		if (GraphisEmpty())
+			return false;
+		for (int i = 0; i < Vers; i++)
+		{
+			cout << ver[i];
+			if (i == Vers - 1)
+				cout << endl;
+			else
+				cout <<" ";
+		}
+		//cout << Edges << endl;
+		cout << endl;
+		for (int i = 0; i < Vers; i++)
+		{
+			for (int j = 0; j < Vers; j++)
+			{
+				cout << edge[i][j] << " ";
+			}
+			cout << endl;
+		}
+		return true;
+	}
+	bool PrintMatrix2()
+	{
+		if (GraphisEmpty())
+			return false;
+		//cout << Edges << endl;
+		for (int i = 0; i < Vers; i++)
+		{
+			for (int j = 0; j < Vers; j++)
+			{
+				cout << edge[i][j] << " ";
+			}
+			cout << endl;
+		}
+		return true;
+	}
+
+	//取得当前顶点数 
+	int GetVerNum() { return Vers; }
+
+	//取得当前边数 
+	int GetEdgeNum() { return Edges; }
+
+	//求有向图指定顶点的入度
+	int Get_InDegree(int u)
+	{
+		if (GraphKind == "UDG" || GraphKind == "UDN" || u<0 || u>=Vers)
+			return -1;
+		int sum = 0;
+		for (int i = 0; i < Vers; i++)
+		{
+			if (edge[i][u] != noEdge)
+				sum++;
+		}
+		return sum;
+	}
+
+	//求指定顶点的（出）度（无向图/网：度； 有向图/网：出度 ）
+	int Get_Degree(int u)
+	{
+		if (u < 0 || u >= Vers)
+			return -1;
+		int sum = 0;
+		for (int i = 0; i < Vers; i++)
+		{
+			if (edge[u][i] != noEdge)
+				sum++;
+		}
+		return sum;
+	}
+
+	//检查指定2个顶点是否是邻接顶点
+	bool ExistEdge(int u, int v)
+	{
+		if (u < 0 || u>= Vers || v < 0 || v >= Vers)
+			return false;
+		if (edge[u][v] == noEdge)
+			return false;
+		return true;
+	}
+	//无权图插入一条边
+	bool Insert_Edge(int u, int v)
+	{
+		if (u<0 || u>=Vers || v<0 || v>=Vers||edge[u][v]!=noEdge)
+			return false;
+		edge[u][v] = 1;
+		Edges++;
+		if (GraphKind == "UDN" || GraphKind == "UDG")
+		{
+			edge[v][u] = 1;
+		}
+		return true;
+	}
+
+	//有权图插入一条边
+	bool Insert_Edge(int u, int v, TypeOfEdge w)
+	{
+		if (u<0 || u>Vers || v<0 || v>=Vers||edge[u][v]!=noEdge)
+			return false;
+		edge[u][v] = w;
+		Edges++;
+		if (GraphKind == "UDN" || GraphKind == "UDG")
+		{
+			edge[v][u] = w;
+		}
+		return true;
+	}
+
+	//往G中删除一个顶点
+	bool DeleteVer(const TypeOfVer &data)
+	{
+		int flag = -1;
+		for (int i = 0; i < Vers; i++)
+		{
+			if (ver[i]==data)
+				flag = i;
+		}
+		if (flag == -1)
+			return false;
+		for (int i = 0; i < Vers; i++)
+		{
+			if (edge[i][flag] != noEdge)
+				Edges--;
+			if (edge[flag][i] != noEdge)
+				Edges--;
+			edge[flag][i] = edge[i][flag] = noEdge;
+		}
+		for (int i = flag; i < Vers - 1; i++)
+		{
+			ver[i] = ver[i + 1];
+			memcpy(edge[i], edge[i + 1], Vers * sizeof(TypeOfEdge));
+		}
+		for (int i = 0; i < Vers - 1; i++)
+		{
+			for (int j = flag; j < Vers - 1; j++)
+			{
+				edge[i][j] = edge[i][j + 1];
+			}
+		}
+		Vers--;
+		return true;
+	}
+
+	//无权图删除一条边
+	bool Delete_Edge(int u, int v)
+	{
+		if (u<0 || u>=Vers || v<0 || v>=Vers||edge[u][v]==noEdge)
+			return false;
+		edge[u][v] = noEdge;
+		Edges--;
+		if (GraphKind == "UDN" || GraphKind == "UDG")
+		{
+			edge[v][u] = noEdge;
+		}
+		return true;
+	}
+
+	//有权图删除一条边
+	bool Delete_Edge(int u, int v, TypeOfEdge w)  
+	{
+		if (u<0 || u>=Vers || v <0 || v>=Vers)
+			return false;
+		edge[u][v] = noEdge;
+		Edges--;
+		if (GraphKind == "UDN" || GraphKind == "UDG")
+		{
+			edge[v][u] = noEdge;
+		}
+		return true;
+	}
+
+	//DFS遍历（外壳部分）
+	void DFS_Traverse(int u)
+	{
+		if (GraphisEmpty()||u<0||u>Vers)
+			return;
+		bool visited[100];
+		memset(visited, 0, sizeof(visited));
+		queue <TypeOfVer> qq;
+		DFS(u, qq, visited);
+		while (qq.size()>1)
+		{
+			cout << qq.front() << "->";
+			qq.pop();
+		}
+		cout << qq.front() << endl;
+		qq.pop();
+	}
+
+	//BFS遍历
+	void BFS_Traverse(int u)
+	{
+		if (u < 0 || u >= Vers)
+			return;
+		bool visited[100];
+		memset(visited, 0, sizeof(visited));
+		queue<int> numqq;
+		queue <TypeOfVer> qq, qq2;
+		qq.push(ver[u]);
+		numqq.push(u);
+		visited[u] = 1;
+		while (!qq.empty())
+		{
+			int j = numqq.front();
+			for (int i = 0; i < Vers; i++)
+			{
+				if (!visited[i] && edge[j][i] != noEdge)
+				{
+					qq.push(ver[i]);
+					numqq.push(i);
+					visited[i] = 1;
+				}
+			}
+			qq2.push(qq.front());
+			qq.pop();
+			numqq.pop();
+		}
+		while (qq2.size()>1)
+		{
+			cout << qq2.front() << "->";
+			qq2.pop();
+		}
+		cout << qq2.front() << endl;
+		qq2.pop();
+	}
+
+	//拓扑排序
+	bool TopSort(int &num, int topsort[])
+	{
+		int degree[100];
+		queue <int> numqq;
+		int flag = 0;
+		for (int i = 0; i < Vers; i++)
+		{
+			degree[i] = Get_InDegree(i);
+			if (!degree[i])
+				numqq.push(i);
+		}
+		while (!numqq.empty())
+		{
+			int node = numqq.front();
+			numqq.pop();
+			topsort[flag++] = node;
+			for (int i = 0; i < Vers; i++)
+			{
+				if (edge[node][i])
+				{
+					degree[i]--;
+					if (degree[i] == 0)
+					{
+						numqq.push(i);
+					}
+				}
+			}
+		}
+		for (int i = 0; i < flag; i++)
+		{
+			cout << ver[topsort[i]];
+			if (i != flag - 1)
+				cout << "->";
+			else
+			{
+				cout << "\n";
+			}
+		}
+		if (flag != Vers)
+			return false;
+		else
+		{
+			return true;
+		}
+	}
+	bool TopSort()
+	{
+		int degree[100];
+		queue <int> numqq;
+		int flag = 0;
+		for (int i = 0; i < Vers; i++)
+		{
+			degree[i] = Get_InDegree(i);
+			if (!degree[i])
+				numqq.push(i);
+		}
+		while (!numqq.empty())
+		{
+			int node = numqq.front();
+			numqq.pop();
+			flag++;			/*用于计数*/
+			for (int i = 0; i < Vers; i++)
+			{
+				if (edge[node][i])
+				{
+					degree[i]--;
+					if (degree[i] == 0)
+					{
+						numqq.push(i);
+					}
+				}
+			}
+		}
+		if (flag != Vers)
+			return false;
+		else
+		{
+			return true;
+		}
+	}
+	//检查两个结点之间是否有路径存在（外壳部分)
+	bool CheckRoute(int u, int v)
+	{
+		queue <TypeOfVer> numqq;
+		bool visited2[100];
+		memset(visited2, 0, sizeof(visited2));
+		DFS(u, numqq, visited2);
+		bool flag = 1;
+		while (!numqq.empty()&&flag)
+		{
+			if (numqq.front() == ver[v])
+			{
+				flag = 0;
+			}
+			else
+			{
+				numqq.pop();
+			}
+		}
+		if (flag)
+		{
+			cout << "false" << endl;
+			return false;
+		}
+			
+		else
+		{
+			cout << "true" << endl;
+			return true;
+		}
+		
+	}
+
+	//有向图判断回路
+	bool isDAG()
+	{
+		if (TopSort())
+			return true;
+		else
+		{
+			return false;
+		}
+	}
+	//无向图判断回路
+	bool U_Judge_Cir()
+	{
+		if (GraphisEmpty())
+			return false;
+		int visited3[100];
+		memset(visited3, 0, sizeof(visited3));
+		queue <int> numqq;
+		for (int i = 0; i < Vers; i++)
+		{
+			if (!visited3[i])
+			{
+				visited3[i] = 1;
+				numqq.push(i);
+				while (!numqq.empty())
+				{
+					int node = numqq.front();
+					numqq.pop();
+					visited3[node] = 2;
+					for (int j = 0; j < Vers; j++)
+					{
+						if (visited3[j] == 1 && edge[node][j] != noEdge)
+							return true;
+						if (!visited3[j] && edge[node][j] != noEdge)
+						{
+							visited3[j] = 1;
+							numqq.push(j);
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	~adjmatrix_graph() //析构函数 
+	{
+		if (GraphisEmpty())
+			return;
+		delete[]ver;
+		for (int i = 0; i < Vers; i++)
+			delete[]edge[i];
+	}
+
+};
+int main()
+{
+	string name;
+	int  e[100][2];
+	char v[100];
+	//int w[100];
+	int vsize, esize, noedgeflag;
+	int  data, data2;
+	cin >> name >> vsize;
+	for (int i = 0; i < vsize; i++)
+		cin >> v[i];
+	//cin >> noedgeflag;
+	cin >> esize;
+	for (int i = 0; i < esize; i++)
+		cin >> e[i][0] >> e[i][1];
+	//for (int i = 0; i < esize; i++)
+	//	cin >> w[i];
+	//cin >> data >> data2;
+	//cout << name << endl;
+	//adjmatrix_graph <char, int> g1(name, vsize, esize, noedgeflag, v, e, w);
+	//cout << g1.GetVerNum() << endl;
+	adjmatrix_graph <char, int> g1(name, vsize, esize, v, e);
+	g1.PrintMatrix();
+	cout << endl;
+	
+	int num = 0;
+	if (g1.U_Judge_Cir())
+		cout << "true" << endl;
+	else
+	{
+		cout << "false" << endl;
+	}
+	return 0;
+}
+
